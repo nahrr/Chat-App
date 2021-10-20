@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import styled from "styled-components";
 import CallIcon from "@material-ui/icons/Call";
 import PhoneCallBackIcon from "@material-ui/icons/PhoneCallback";
@@ -17,12 +17,9 @@ const SharedButton = styled.button`
   margin: 50px auto 50px auto;
   font-family: "Montserrat";
   display: flex;
-
   align-items: center;
   flex-direction: column;
   justify-content: center;
-
-  /* this can be anything */
 `;
 
 const CallButton = styled(SharedButton)`
@@ -34,6 +31,7 @@ const EndCallButton = styled(SharedButton)`
   background: #333740;
   color: #7f6921;
 `;
+
 // const Content = styled.span`
 //   margin-right: 50px;
 //   padding: 0.5rem;
@@ -49,7 +47,7 @@ type props = {
 };
 export const Menu = ({ setMode, setShowModal, mode }: props) => {
   return (
-    <>
+    <Fragment>
       {mode === "" && (
         <Container>
           <CallButton
@@ -80,6 +78,6 @@ export const Menu = ({ setMode, setShowModal, mode }: props) => {
           </EndCallButton>
         </Container>
       )}
-    </>
+    </Fragment>
   );
 };

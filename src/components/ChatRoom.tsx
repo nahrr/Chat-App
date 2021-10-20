@@ -21,7 +21,9 @@ import {
 } from "firebase/firestore";
 import styled from "styled-components";
 import SendIcon from "@material-ui/icons/Send";
+import SwitchVideo from "@material-ui/icons/SwitchVideo";
 import { ChatMessage } from "./ChatMessage";
+import ChatBubble from "@material-ui/icons/Chat";
 import { ConfirmModal } from "./ConfirmModal";
 import { Menu } from "./Menu";
 import { ClipboardCopy } from "./CopyToClipboard";
@@ -30,20 +32,26 @@ import { HangUp } from "./HangUp";
 const auth = getAuth();
 const db = getFirestore();
 
+interface Dynamic {
+  toggle: boolean;
+}
+
 const MainContent = styled.div`
   display: flex;
   flex-direction: row;
-  margin: 5rem auto;
+  margin: 0 auto;
   justify-content: center;
   align-items: center;
   width: 100%;
   @media (max-width: 728px) {
     flex-direction: column;
     width: 100%;
+    margin: 0 auto;
+    position: relative;
   }
 `;
 
-const CallContent = styled.div`
+const CallContent = styled.div<Dynamic>`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -52,10 +60,17 @@ const CallContent = styled.div`
   margin: 0 auto;
   @media (max-width: 728px) {
     flex-direction: column;
+    position: absolute;
+    z-index: 999;
+    justify-content: center;
+    width: 100%;
+    height: 80vh;
+    margin-top: 500px; //TODO
+    display: ${(props) => (props.toggle ? "none" : "flex")};
   }
 `;
 
-const Aside = styled.aside`
+const Aside = styled.aside<Dynamic>`
   display: flex;
   flex-direction: column;
   justify-content: start;
@@ -69,12 +84,18 @@ const Aside = styled.aside`
   ::-webkit-scrollbar-track {
     background: #1e1e24;
   }
- ::-webkit-scrollbar-thumb {
+  ::-webkit-scrollbar-thumb {
     background: #0f2e6b;
   }
 
   @media (max-width: 728px) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     width: 100%;
+    height: 90vh;
+    margin: 0 auto;
+    display: ${(props) => (props.toggle ? "flex" : "none")};
   }
 `;
 const Form = styled.form`
@@ -134,14 +155,56 @@ const Video = styled.video`
 const VideoLocal = styled(Video)`
   width: 35rem;
   @media (max-width: 728px) {
-    max-width: 20rem;
+    max-width: 10rem;
   }
 `;
 
 const VideoRemote = styled(Video)`
+  margin-top: 5rem;
   width: 50rem;
   @media (max-width: 728px) {
     max-width: 25rem;
+  }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+  width 80%;
+`;
+const ChatButton = styled.button`
+  display: none;
+  @media (max-width: 728px) {
+    margin: 1rem auto;
+    cursor: pointer;
+    font-size: 0.75rem;
+    text-decoration: none;
+    display: flex;
+    justify-items: center;
+    padding: 1rem 2rem 1rem 2rem;
+    border-radius: 1rem;
+    border: 0;
+    text-transform: uppercase;
+    background-color: #333740;
+  }
+`;
+
+const VideoButton = styled.button`
+  display: none;
+  @media (max-width: 728px) {
+    margin: 1rem auto;
+    cursor: pointer;
+    font-size: 0.75rem;
+    text-decoration: none;
+    display: flex;
+    justify-items: center;
+    padding: 1rem 2rem 1rem 2rem;
+    border-radius: 1rem;
+    border: 0;
+    text-transform: uppercase;
+    background-color: #282c34;
+    z-index: 999;
   }
 `;
 
@@ -162,6 +225,7 @@ export function ChatRoom() {
   const [isApproved, setIsApproved] = useState<boolean>(false);
   const [mode, setMode] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [isChatOpen, setChatIsOpen] = useState<boolean>(false);
   const dummy = useRef<HTMLSpanElement>(null);
   const [callId, setCallId] = useState<string>("");
   const localRef = useRef() as MutableRefObject<HTMLVideoElement>;
@@ -333,10 +397,11 @@ export function ChatRoom() {
   };
 
   dummy.current?.scrollIntoView({ behavior: "smooth" });
+  console.log(isChatOpen);
   return (
     <Fragment>
       <MainContent>
-        <CallContent>
+        <CallContent toggle={isChatOpen}>
           <Menu setMode={setMode} setShowModal={setShowModal} mode={mode} />
 
           {showModal && (
@@ -363,14 +428,23 @@ export function ChatRoom() {
           )}
           {mode !== "" && (
             <VideoArea>
-              <VideoLocal ref={localRef} autoPlay playsInline muted />
               <VideoRemote ref={remoteRef} autoPlay playsInline />
+              <VideoLocal ref={localRef} autoPlay playsInline muted />
             </VideoArea>
           )}
-          {mode !== "" && <HangUp hangUp={hangUp} />}
+          <ButtonContainer>
+            {mode !== "" && <HangUp hangUp={hangUp} />}
+            <ChatButton onClick={() => setChatIsOpen(!isChatOpen)}>
+              <ChatBubble style={{ color: "#aa8c2c" }} />
+            </ChatButton>
+          </ButtonContainer>
         </CallContent>
       </MainContent>
-      <Aside>
+
+      <Aside toggle={isChatOpen}>
+        <VideoButton onClick={() => setChatIsOpen(!isChatOpen)}>
+          <SwitchVideo style={{ color: "#aa8c2c" }} />
+        </VideoButton>
         {messages &&
           messages.map(
             (msg: {
@@ -391,7 +465,7 @@ export function ChatRoom() {
           />
           <Button type="submit">
             <SendIcon />
-            <span ref={dummy}></span>
+            {/* <span ref={dummy}></span> */}
           </Button>
         </Form>
       </Aside>

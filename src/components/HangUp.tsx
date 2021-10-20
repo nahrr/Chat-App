@@ -2,7 +2,7 @@ import React from "react"
 import styled from "styled-components";
 import CallEnd from "@material-ui/icons/CallEnd";
 const Button = styled.button`
-margin: 0 auto;
+margin: 1rem auto;
 cursor: pointer;
 font-size: 0.75rem;
 text-decoration: none;
